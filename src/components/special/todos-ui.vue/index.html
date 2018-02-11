@@ -1,0 +1,43 @@
+<section :class="$style.todoapp">
+  <header :class="$style.header">
+    <h1>todos</h1>
+    <input :class="$style['new-todo']"
+      autofocus autocomplete="off"
+      placeholder="What needs to be done?"
+      v-model="newTodo"
+      @keyup.enter="addTodo">
+  </header>
+  <section :class="$style.main" v-show="todos.length" v-cloak>
+    <input :class="$style['toggle-all']" type="checkbox" v-model="allDone">
+    <ul :class="$style['todo-list']">
+      <li v-for="todo in filteredTodos"
+        :key="todo.id"
+        :class="todoState(todo)">
+        <div :class="$style.view">
+          <input :class="$style.toggle" type="checkbox" v-model="todo.completed">
+          <label :class="$style.content" @dblclick="editTodo(todo)">{{ todo.title }}</label>
+          <button :class="$style.destroy" @click="removeTodo(todo)"></button>
+        </div>
+        <input :class="$style.edit" type="text"
+          v-model="todo.title"
+          v-todo-focus="todo == editedTodo"
+          @blur="doneEdit(todo)"
+          @keyup.enter="doneEdit(todo)"
+          @keyup.esc="cancelEdit(todo)">
+      </li>
+    </ul>
+  </section>
+  <footer :class="$style.footer" v-show="todos.length" v-cloak>
+    <span :class="$style['todo-count']">
+      <strong>{{ remaining }}</strong> {{ remaining | pluralize }} left
+    </span>
+    <ul :class="$style.filters">
+      <li><a :class="todosState('all')" @click="changeVisibilities('all')">All</a></li>
+      <li><a :class="todosState('active')" @click="changeVisibilities('active')">Active</a></li>
+      <li><a :class="todosState('completed')" @click="changeVisibilities('completed')">Completed</a></li>
+    </ul>
+    <button :class="$style['clear-completed']" @click="removeCompleted" v-show="todos.length > remaining">
+      Clear completed
+    </button>
+  </footer>
+</section>

@@ -1,0 +1,3 @@
+<template>
+    <todos-ui />
+</template>
