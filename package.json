@@ -4,6 +4,7 @@
   "dependencies": {
     "babel-polyfill": "^6.26.0",
     "cloud-ui.vusion": "~0.2.0",
+    "mongodb": "^3.0.2",
     "vue": "^2.5.0",
     "vue-router": "^3.0.0",
     "vusion-utils": "^0.1.0"

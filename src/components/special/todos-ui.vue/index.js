@@ -2,7 +2,16 @@
 // and hash-based routing in ~120 effective lines of JavaScript.
 
 // localStorage persistence
-var STORAGE_KEY = 'todos-vuejs-2.0'
+import stack from '../../../services/ajaxbus/stack';
+const uniqueID = (function(){
+  var _seed = +new Date;
+  return function(){
+      return ''+(_seed++);
+  };
+})();
+const _ACTIVE = 1;
+const _COMPLETE = 2;
+var STORAGE_KEY = 'todos-vuejs-vusion-cli-1.0'
 var todoStorage = {
   fetch: function () {
     var todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
@@ -72,9 +81,15 @@ export default {
         return this.remaining === 0
       },
       set: function (value) {
+        stack.addTask(this.todos.map((todo) => ({
+            id: todo.id,
+            state: value ? _COMPLETE: _ACTIVE,
+            crud: 'u',
+          })));
         this.todos.forEach(function (todo) {
           todo.completed = value
         })
+
       }
     },
 
@@ -94,16 +109,28 @@ export default {
       if (!value) {
         return
       }
-      this.todos.push({
-        id: todoStorage.uid++,
+      const newTodo = {
+        id: uniqueID(),
         title: value,
         completed: false
-      })
+      }
+      stack.addTask({
+        id: newTodo.id,
+        content: value,
+        state: _ACTIVE,
+        crud: 'c',
+      });
+
+      this.todos.push(newTodo)
       this.newTodo = ''
     },
 
     removeTodo: function (todo) {
       this.todos.splice(this.todos.indexOf(todo), 1)
+      stack.addTask({
+        id: todo.id,
+        crud: 'd',
+      });
     },
 
     editTodo: function (todo) {
@@ -119,6 +146,12 @@ export default {
       todo.title = todo.title.trim()
       if (!todo.title) {
         this.removeTodo(todo)
+      }else{
+        stack.addTask({
+          id: todo.id,
+          content: todo.title,
+          crud: 'u'
+        })
       }
     },
 
@@ -128,6 +161,11 @@ export default {
     },
 
     removeCompleted: function () {
+      stack.addTask(
+        filters.completed(this.todos).map((todo) => ({
+          id: todo.id,
+          crud: 'd',
+        })));
       this.todos = filters.active(this.todos)
     },
 
@@ -139,6 +177,7 @@ export default {
       var obj = {}
       obj[this.$style.completed] = todo.completed
       obj[this.$style.editing] = todo == this.editedTodo
+      console.log(obj)
       return obj;
     },
 
@@ -146,13 +185,34 @@ export default {
       var obj = {}
       obj[this.$style.selected] = this.visibility === state;
       return obj;
+    },
+
+    toggleTodo: function(todo) {
+      stack.addTask({
+        id: todo.id,
+        state: todo.completed === _ACTIVE ? _COMPLETE: _ACTIVE,
+        crud: 'u',
+      });
     }
   },
 
   mounted: function(){
     this.$nextTick(function () {
-      console.log(this.$style)
+      //console.log(this.$attrs)
     })
+    stack
+      .initialize()
+      .then(response => (response.json()))
+      .catch(err => {console.log(err);})
+      .then(data => {
+        console.log(data)
+        this.todos = data.map(item => ({
+          id: item._id,
+          title: item.content,
+          completed: item.state === _COMPLETE
+        }));
+        stack.startEngine({_engineCycle:1000});
+      })
   },
 
   // a custom directive to wait for the DOM to be updated
