@@ -177,7 +177,7 @@ export default {
       var obj = {}
       obj[this.$style.completed] = todo.completed
       obj[this.$style.editing] = todo == this.editedTodo
-      console.log(obj)
+      //console.log(obj)
       return obj;
     },
 
@@ -190,7 +190,7 @@ export default {
     toggleTodo: function(todo) {
       stack.addTask({
         id: todo.id,
-        state: todo.completed === _ACTIVE ? _COMPLETE: _ACTIVE,
+        state: todo.completed ? _ACTIVE: _COMPLETE,
         crud: 'u',
       });
     }
@@ -205,7 +205,7 @@ export default {
       .then(response => (response.json()))
       .catch(err => {console.log(err);})
       .then(data => {
-        console.log(data)
+        //console.log(data)
         this.todos = data.map(item => ({
           id: item._id,
           title: item.content,

@@ -38,7 +38,10 @@ const OPRATION = {
   r: 'query',
   u: {
     parser: (id, state, content) => {
-      const update = { "state": state };
+      const update = {};
+      if(state) {
+        update.state = state;
+      }
       if(content){
         update.content = content;
       }

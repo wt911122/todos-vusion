@@ -38,12 +38,12 @@ function _addTask(_task){
 
 function _engine() {
   if(_tasks.length > 0 && _engine_state === _IDLE){
-    console.log(_tasks.length);
+    //console.log(_tasks.length);
     _engine_state = _PENDING;
     _postData('/api/crud', _tasks)
       .then(data => data.json())
       .then(data => {
-        console.log(data);
+        //console.log(data);
         if(data.code === 1){
           _tasks = [];
         }
