@@ -1,0 +1,66 @@
+<div :class="$style.root">
+<section :class="$style.todoapp">
+  <header>
+    <h1>todos</h1>
+    <u-todo-input
+      placeholder="What needs to be done?"
+      autofocus
+      @keyup.enter="addTodo"
+      :customStyle="$customStyle().newTodo"
+      v-model="temp">
+      </u-todo-input>
+  </header>
+
+  <section :class="$style.main">
+    <input :class="$style.toggleAll" type="checkbox" v-model="allDone">
+    <u-todo-list-view
+      multiple
+      cancelable
+      :alldone="allDone"
+      @input="oneItemChanged">
+      <u-todo-list-view-item
+        v-for="(todo, index) in todos"
+        v-if="isVisible(todo)"
+        :key="todo.uid"
+        :value="todo"
+        >
+          <div :class="$style.todoWrapper">
+            <u-todo-input
+              autofocus
+              :customStyle="$customStyle().editing"
+              @keyup.enter="doneEdit(todo)"
+              @blur="doneEdit(todo)"
+              @click.stop
+              v-model="todos[index].value"
+              v-if="todo === editingTodo"
+              ></u-todo-input>
+            <label
+              :class="$style.content"
+              v-if="!(todo === editingTodo)"
+              @click.stop
+              @dblclick.stop="editTodo(todo)">
+              {{ todo.value }}
+            </label>
+            <button :class="$style.destroy" @click="removeTodo(index)"></button>
+          </div>
+
+      </u-todo-list-view-item>
+    </u-todo-list-view>
+  </section>
+
+  <footer :class="$style.footer" v-show="todos.length">
+    <span :class="$style.todoCount">
+      <strong>{{ remaining }}</strong> items left
+    </span>
+    <u-todo-tabs v-model="visibility">
+      <u-todo-tab title="All" value="all">All</u-todo-tab>
+      <u-todo-tab title="Active" value="active">Active</u-todo-tab>
+      <u-todo-tab title="Completed" value="completed">Completed</u-todo-tab>
+    </u-todo-tabs>
+    <button
+      :class="$style.clearCompleted"
+      v-if="remaining < this.todos.length"
+      @click="clearCompleted">Clear completed</button>
+  </footer>
+</section>
+</div>

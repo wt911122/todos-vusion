@@ -43,10 +43,8 @@ var filters = {
   }
 }
 
-// app Vue instance
 export default {
   name: 'todos-ui',
-  // app initial state
   data (){
     const temp = todoStorage.fetch()
     return {
@@ -57,7 +55,6 @@ export default {
     }
   },
 
-  // watch todos change for localStorage persistence
   watch: {
     todos: {
       handler: function (todos) {
@@ -67,8 +64,6 @@ export default {
     }
   },
 
-  // computed properties
-  // http://vuejs.org/guide/computed.html
   computed: {
     filteredTodos: function () {
       return filters[this.visibility](this.todos)
