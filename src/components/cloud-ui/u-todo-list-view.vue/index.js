@@ -9,7 +9,11 @@ export default {
   },
   watch: {
     alldone(value) {
-      this.itemVMs.forEach((itemVM) => {this.select(itemVM)})
+      this.itemVMs.forEach((itemVM) => {
+        if(itemVM.currentSelected != value){
+          this.select(itemVM)
+        }
+      })
     }
   }
 }
