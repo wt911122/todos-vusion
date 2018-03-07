@@ -1,3 +1,7 @@
+import stack from '../../../services/ajaxbus/stack';
+const _ACTIVE = 1;
+const _COMPLETE = 2;
+
 var STORAGE_KEY = 'todos-vuejs-vusion-cli-2.0'
 var todoStorage = {
   fetch: function () {
@@ -22,6 +26,7 @@ const uniqueID = (function(){
 })();
 
 
+
 let id = 0;
 const factory = ({
   value = '',
@@ -35,6 +40,12 @@ const factory = ({
         if(value != newVal){
           console.log('newVal setted')
           value = newVal;
+          console.log(uid)
+          stack.addTaskThrottle({
+            id: uid,
+            content: newVal,
+            crud: 'u'
+          })
         }
       },
       get: function(){
@@ -47,6 +58,11 @@ const factory = ({
         if(value != newVal){
           console.log(`Completed setted ${id++}`)
           completed = newVal;
+          stack.addTask({
+            id: uid,
+            state: newVal ? _COMPLETE: _ACTIVE,
+            crud: 'u',
+          });
         }
       },
       get: function(){
@@ -60,7 +76,6 @@ const factory = ({
       enumerable: true,
     }
   });
-
   return target
 }
 
@@ -110,12 +125,21 @@ export default {
       },
       set(value){
         let x = [];
+        //console.log(value)
         value.forEach((item) => {
+
           x[item.uid] = item;
         })
         this.todos.forEach((item) => {
-          if(x[item.uid]) item.completed = true;
-          else            item.completed = false;
+          console.log(item.completed)
+          if(x[item.uid] && !item.completed){
+            console.log(`${item.value} completed`)
+            item.completed = true;
+          }
+          else if(!!!x[item.uid] && item.completed){
+            console.log(`${item.value} active`)
+            item.completed = false;
+          }
         })
         x = null
       }
@@ -132,8 +156,16 @@ export default {
 
     addTodo(){
       const str = this.temp.trim();
-      if(str)
-        this.todos.push(factory({value: str}))
+      if(str){
+        const todo = factory({value: str});
+        this.todos.push(todo)
+        stack.addTask({
+          id: todo.uid,
+          content: todo.value,
+          state: todo.completed ? _COMPLETE: _ACTIVE,
+          crud: 'c',
+        });
+      }
       this.temp = "";
     },
     editTodo(todo) {
@@ -143,6 +175,11 @@ export default {
       this.editingTodo = null;
     },
     removeTodo(index) {
+      const todo = this.todos[index];
+      stack.addTask({
+        id: todo.uid,
+        crud: 'd',
+      });
       this.todos.splice(index, 1);
     },
     isVisible(todo) {
@@ -152,7 +189,32 @@ export default {
         || (visibility === 'completed' && todo.completed)
     },
     clearCompleted(){
+      stack.addTask(
+        this.todos
+          .filter(todo => todo.completed)
+          .map(todo => ({
+            id: todo.uid,
+            crud: 'd',
+          }))
+      );
       this.todos = this.todos.filter(todo => !todo.completed)
     }
-  }
+  },
+  mounted: function(){
+    stack
+      .initialize()
+      .then(response => (response.json()))
+      .catch(err => {console.log(err);})
+      .then(data => {
+        console.log(data)
+
+        this.todos = data.map(item => (factory({
+          uid: item._id,
+          value: item.content,
+          completed: item.state === _COMPLETE
+        })));
+        stack.startEngine({_engineCycle:1000});
+      });
+  },
+
 }

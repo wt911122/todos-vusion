@@ -21,6 +21,17 @@ var _IDLE    = 1;
 var _engine_state = _IDLE;
 var _engineOB = new _eventdispatcher();
 
+const throttle = function(func, delay){
+  let i = null;
+  return function(){
+    clearTimeout(i);
+    i = setTimeout(func, delay)
+  }
+}
+var _throttle_addTask = function(_task){
+  throttle(_addTask.bind(null, _task), 500)();
+}
+
 
 function _addTask(_task){
   if(_engine_state === _IDLE){
@@ -65,6 +76,7 @@ function _startEngine(options){
 }
 
 p.addTask = _addTask;
+p.addTaskThrottle = _throttle_addTask;
 p.startEngine = _startEngine;
 
 function _initialize(){

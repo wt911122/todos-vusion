@@ -22,7 +22,7 @@
         v-for="(todo, index) in todos"
         v-if="isVisible(todo)"
         :key="todo.uid"
-        :value="todo"
+        v-model="todos[index]"
         >
           <div :class="$style.todoWrapper">
             <u-todo-input

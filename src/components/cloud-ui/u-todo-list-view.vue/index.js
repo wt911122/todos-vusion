@@ -15,5 +15,25 @@ export default {
         }
       })
     }
+  },
+  methods: {
+    watchValue(value) {
+      if (this.multiple){
+          console.log(value)
+          this.itemVMs.forEach((itemVM) => {
+            itemVM.currentSelected = value && value.some(todo => todo.uid === itemVM.value.uid)
+          });
+      }
+      else {
+          if (this.selectedVM && this.selectedVM.value === value)
+              return;
+          if (value === undefined)
+              this.selectedVM = undefined;
+          else {
+              this.selectedVM = this.itemVMs.find((itemVM) => itemVM.value === value);
+              this.selectedVM && this.selectedVM.groupVM && this.selectedVM.groupVM.toggle(true);
+          }
+      }
+  },
   }
 }
