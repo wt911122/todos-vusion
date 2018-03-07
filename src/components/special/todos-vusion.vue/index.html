@@ -17,7 +17,7 @@
       multiple
       cancelable
       :alldone="allDone"
-      @input="oneItemChanged">
+      v-model="completedTodos">
       <u-todo-list-view-item
         v-for="(todo, index) in todos"
         v-if="isVisible(todo)"

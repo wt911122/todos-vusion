@@ -1,3 +1,19 @@
+var STORAGE_KEY = 'todos-vuejs-vusion-cli-2.0'
+var todoStorage = {
+  fetch: function () {
+    var todos = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+    todos.forEach(function (todo, index) {
+      todo.id = index
+    })
+    todoStorage.uid = todos.length
+    return todos
+  },
+  save: function (todos) {
+    console.log(JSON.stringify(todos))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
+  }
+}
+
 const uniqueID = (function(){
   var _seed = +new Date;
   return function(){
@@ -6,11 +22,47 @@ const uniqueID = (function(){
 })();
 
 
+let id = 0;
 const factory = ({
   value = '',
   uid = uniqueID(),
   completed = false
-} = {}) => ({value, uid, completed})
+} = {}) => {
+  const target = {};
+  Object.defineProperties(target, {
+    'value': {
+      set: function(newVal){
+        if(value != newVal){
+          console.log('newVal setted')
+          value = newVal;
+        }
+      },
+      get: function(){
+        return value;
+      },
+      enumerable: true,
+    },
+    'completed': {
+      set: function(newVal){
+        if(value != newVal){
+          console.log(`Completed setted ${id++}`)
+          completed = newVal;
+        }
+      },
+      get: function(){
+        return completed;
+      },
+      enumerable: true,
+    },
+    'uid': {
+      value: uid,
+      writable: false,
+      enumerable: true,
+    }
+  });
+
+  return target
+}
 
 const localStyle = {
   newTodo: {
@@ -28,8 +80,9 @@ const localStyle = {
 export default {
   name : 'todos-vusion',
   data (){
+    const temp = todoStorage.fetch()
     return {
-      todos: [],
+      todos: temp,
       temp: '',
       visibility: 'all',
       editingTodo: null,
@@ -37,10 +90,36 @@ export default {
     }
   },
 
+  watch: {
+    todos:{
+      handler: function (todos) {
+        console.log("watched")
+        todoStorage.save(todos)
+      },
+      deep: true
+    }
+  },
+
   computed: {
     remaining () {
       return this.todos.filter(todo => !todo.completed).length;
     },
+    completedTodos:{
+      get(){
+        return this.todos.filter(todo => todo.completed)
+      },
+      set(value){
+        let x = [];
+        value.forEach((item) => {
+          x[item.uid] = item;
+        })
+        this.todos.forEach((item) => {
+          if(x[item.uid]) item.completed = true;
+          else            item.completed = false;
+        })
+        x = null
+      }
+    }
   },
 
   methods: {
@@ -56,18 +135,6 @@ export default {
       if(str)
         this.todos.push(factory({value: str}))
       this.temp = "";
-    },
-    oneItemChanged(value){
-      let x = [];
-      value.forEach((item) => {
-        x[item.uid] = item;
-      })
-      this.todos.forEach((item) => {
-        if(x[item.uid]) item.completed = true;
-        else            item.completed = false;
-      })
-      x = null
-      //this.parentVM.selectedVM
     },
     editTodo(todo) {
       this.editingTodo = todo;

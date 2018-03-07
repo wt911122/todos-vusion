@@ -6,5 +6,5 @@ export default {
   parentName: 'u-todo-list-view',
   props: {
     editing: false
-  }
+  },
 }
